@@ -1,0 +1,31 @@
+{
+  "ip": "192.168.100.84",
+  "macs": {
+    "192.168.100.84": "b8:a0:b8:4c:21:96",
+    "192.168.100.189": "00:7d:3b:59:01:51",
+    "192.168.1.88": "00:7d:3b:3c:5b:bb",
+    "192.168.1.107": "b8:a0:b8:49:d7:fe",
+    "192.168.1.58": "b8:a0:b8:49:d6:36",
+    "192.168.1.68": "b8:a0:b8:49:d7:c9",
+    "192.168.1.126": "b8:a0:b8:49:d5:e7",
+    "192.168.1.131": "28:07:08:07:e2:12",
+    "192.168.1.69": "00:7d:3b:3c:5b:93",
+    "192.168.1.163": "b0:f2:f6:9c:f7:5c",
+    "192.168.1.153": "00:7d:3b:3c:5b:e8",
+    "192.168.1.127": "74:6d:fa:38:75:2e"
+  },
+  "_tvs": {
+    "192.168.100.84": "85in Business TV BEF-H (LH85BEFHLGFXGO) - office",
+    "192.168.100.189": "85in Crystal UHD DU8000 consumer (UN85DU8000CXZA) - office",
+    "192.168.1.88": "65in Golf Sim Right (QN65Q8FAAFXZA) - venue",
+    "192.168.1.107": "65in Golf Sim Left (QN65Q8FAAFXZA) - venue",
+    "192.168.1.58": "65in Bar Side (QN65Q8FAAFXZA) - venue",
+    "192.168.1.68": "65in Back Bar (QN65Q8FAAFXZA) - venue",
+    "192.168.1.126": "65in Over Bar (QN65Q8FAAFXZA) - venue",
+    "192.168.1.131": "55in Bar (QN55QN70FAFXZA) - venue",
+    "192.168.1.69": "65in Lounge (QN65Q8FAAFXZA) - venue",
+    "192.168.1.163": "75in Pavillion (QN75Q8FAAFXZA) - venue",
+    "192.168.1.153": "65in Zachs Office (QN65Q8FAAFXZA) - venue",
+    "192.168.1.127": "55in Kitchen Sitting Frame (QN55LS03FAFXZA) - venue"
+  }
+}

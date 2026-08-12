@@ -1,0 +1,146 @@
+LOXONE DIRECT CONTROL OF THE 10 SAMSUNG TVs - no bridge, Miniserver only
+Generated 2026-07-27 after live testing against the TVs.
+
+WHAT WORKS DIRECT:  power ON (wol://), volume + mute (tcp:// UPnP),
+                    app launch (http:// port 8001).
+NOT POSSIBLE DIRECT: power OFF, HDMI source switching, remote keys.
+  These 2025 Tizen TVs only accept those over a token-paired TLS
+  WebSocket (wss :8002). Verified: legacy port 55000 closed, plain
+  ws :8001 answers ms.channel.unauthorized. A Miniserver has no
+  WebSocket client, so no template or command string can ever do it.
+
+==========================================================================
+1) POWER ON - Wake on LAN (native Loxone)
+==========================================================================
+One Virtual Output, Address:  wol://
+Then one Virtual Output Command per TV; 'Command when ON' = MAC:
+
+  Golf Sim Right  00:7d:3b:3c:5b:bb     (IP 192.168.1.88)
+  Golf Sim Left   b8:a0:b8:49:d7:fe     (IP 192.168.1.107)
+  Bar Side        b8:a0:b8:49:d6:36     (IP 192.168.1.58)
+  Back Bar        b8:a0:b8:49:d7:c9     (IP 192.168.1.68)
+  Over Bar        b8:a0:b8:49:d5:e7     (IP 192.168.1.126)
+  Bar 55in        28:07:08:07:e2:12     (IP 192.168.1.131)
+  Lounge          00:7d:3b:3c:5b:93     (IP 192.168.1.69)
+  Pavillion       b0:f2:f6:9c:f7:5c     (IP 192.168.1.163)
+  Zachs Office    00:7d:3b:3c:5b:e8     (IP 192.168.1.153)
+  Kitchen Frame   74:6d:fa:38:75:2e     (IP 192.168.1.127)
+
+TV setting required once per TV: Settings > Connection > Network >
+Expert Settings > Power On with Mobile = ON (a.k.a. network standby).
+Pavillion + Kitchen Frame are on WiFi - WoL from cold power is not
+reliable over WiFi; all other TVs are wired and fine.
+
+==========================================================================
+2) VOLUME / MUTE - UPnP over raw TCP (tested working)
+==========================================================================
+Per TV: Virtual Output, Address:  tcp://<TV-IP>:9197
+Commands below are ONE LINE each - paste into 'Command when ON'.
+Escape sequences \r\n are literal backslash-r-backslash-n.
+
+--- Golf Sim Right  (tcp://192.168.1.88:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.88:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.88:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.88:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Golf Sim Left  (tcp://192.168.1.107:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.107:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.107:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.107:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Bar Side  (tcp://192.168.1.58:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.58:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.58:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.58:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Back Bar  (tcp://192.168.1.68:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.68:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.68:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.68:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Over Bar  (tcp://192.168.1.126:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.126:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.126:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.126:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Bar 55in  (tcp://192.168.1.131:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.131:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.131:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.131:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Lounge  (tcp://192.168.1.69:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.69:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.69:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.69:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Pavillion  (tcp://192.168.1.163:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.163:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.163:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.163:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Zachs Office  (tcp://192.168.1.153:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.153:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.153:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.153:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+--- Kitchen Frame  (tcp://192.168.1.127:9197) ---
+MUTE ON:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.127:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>1</DesiredMute></u:SetMute></s:Body></s:Envelope>
+MUTE OFF:
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.127:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetMute"\r\nContent-Length: 352\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>0</DesiredMute></u:SetMute></s:Body></s:Envelope>
+SET VOLUME (analog command, use <v>; KEEP RANGE 10-99 so the
+2-digit value matches the fixed Content-Length):
+POST /upnp/control/RenderingControl1 HTTP/1.1\r\nHost: 192.168.1.127:9197\r\nContent-Type: text/xml; charset="utf-8"\r\nSOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume"\r\nContent-Length: 361\r\nConnection: close\r\n\r\n<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:SetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume><v></DesiredVolume></u:SetVolume></s:Body></s:Envelope>
+
+==========================================================================
+3) APP LAUNCH - HTTP REST port 8001 (no pairing needed)
+==========================================================================
+Loxone Library template 'Samsung TV IP Control Basic' does exactly
+this, or manually: Address http://<TV-IP>:8001  and POST to
+/api/v2/applications/<appId>   (HTTP method POST).
+
+==========================================================================
+4) POWER OFF - pick one Loxone-native route
+==========================================================================
+a) Relay-switched outlets: relay OFF at close = TVs hard off;
+   open scene = relay ON, wait ~45 s, fire WoL commands. Fully native.
+b) Loxone IR Control Air at each TV: learned Samsung IR power/source
+   codes, triggered natively by the Miniserver.
+c) Future installs: spec Samsung commercial displays (BE/QB/QM) -
+   they speak MDC on TCP 1515, which Loxone drives with tcp://.

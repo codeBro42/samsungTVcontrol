@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Runtime state: pairing tokens, logs, chosen-playlist pointer
+state/
+*.log
+tvbridge.log*
+token-*.txt
+SamsungTVControl/
+
+# The photos themselves - personal, large, and site-specific.
+# Keep the folder layout, not the contents.
+windows/photos/*/*
+!windows/photos/*/README.txt
+
+# Local backups / scratch
+config.backup.json
+*.json.tmp
+startup.txt
+pair*.txt
+.DS_Store

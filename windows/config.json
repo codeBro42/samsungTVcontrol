@@ -1,0 +1,440 @@
+{
+  "_readme": "Edit this file, then hit http://<pc>:8899/reload - no restart needed. Keys starting with _ are comments and are ignored.",
+  "http_port": 8899,
+  "tcp_port": 8900,
+  "udp_port": 8900,
+  "_client_name": "Tokens are bound to this exact string. It is 'MacControl' because the office TV tokens below were granted under that name - changing it forces a re-pair on every TV.",
+  "client_name": "MacControl",
+  "ws_timeout": 10,
+  "photo_root": "photos",
+  "default_playlist": "default",
+  "log_file": "tvbridge.log",
+  "_base_url": "The address the TVs use to reach this PC. Because each TV's browser homepage is set to a URL containing it, it MUST NOT change - give this host a reserved/static IP and put it here before setting any homepages. Leave blank only for testing, which auto-detects the current address. Target PC is 192.168.1.246, so set: http://192.168.1.246:8899",
+  "base_url": "http://192.168.1.246:8899",
+  "_allow_from": "Empty list = accept commands from anyone on the LAN. Add controller IPs to lock it down, e.g. [\"192.168.1.10\"] for the Loxone Miniserver.",
+  "allow_from": [],
+  "_macros": "Shared key sequences, overridable per TV. '@250' waits 250 ms, 'KEY_X*3' repeats. source-<name> is what /<tv>/source/<name> runs.",
+  "macros": {
+    "source-list": [
+      "KEY_SOURCE"
+    ],
+    "source-hdmi1": [
+      "KEY_SOURCE",
+      "@1500",
+      "KEY_LEFT*6",
+      "@500",
+      "KEY_ENTER"
+    ],
+    "source-hdmi2": [
+      "KEY_SOURCE",
+      "@1500",
+      "KEY_LEFT*6",
+      "@500",
+      "KEY_RIGHT",
+      "@400",
+      "KEY_ENTER"
+    ],
+    "source-hdmi3": [
+      "KEY_SOURCE",
+      "@1500",
+      "KEY_LEFT*6",
+      "@500",
+      "KEY_RIGHT*2",
+      "@400",
+      "KEY_ENTER"
+    ],
+    "source-hdmi4": [
+      "KEY_SOURCE",
+      "@1500",
+      "KEY_LEFT*6",
+      "@500",
+      "KEY_RIGHT*3",
+      "@400",
+      "KEY_ENTER"
+    ],
+    "home": [
+      "KEY_HOME"
+    ],
+    "exit": [
+      "KEY_RETURN",
+      "@600",
+      "KEY_EXIT"
+    ],
+    "open-browser": [
+      "KEY_HOME",
+      "@1200",
+      "KEY_HOME",
+      "@1800",
+      "KEY_DOWN",
+      "@500",
+      "KEY_DOWN",
+      "@500",
+      "KEY_DOWN",
+      "@900",
+      "KEY_LEFT",
+      "@500",
+      "KEY_LEFT",
+      "@500",
+      "KEY_LEFT",
+      "@900",
+      "KEY_ENTER"
+    ]
+  },
+  "_tvs": "photos.method: browser (this PC serves the slideshow, TV browser displays it), art (Frame only), or usb (blind key macro - calibrate with: py tvbridge.py learn <alias>).",
+  "tvs": {
+    "middle-bed": {
+      "ip": "192.168.1.238",
+      "mac": "80:0d:3f:3b:69:7e",
+      "label": "Middle Bed (3) - 43in Crystal UHD (UN50M70HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "sitting-area": {
+      "ip": "192.168.1.11",
+      "mac": "80:0d:3f:8f:60:08",
+      "label": "Sitting Area - 65in The Frame 1 (QN65LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "office": {
+      "ip": "192.168.1.194",
+      "mac": "80:0d:3f:8f:77:4e",
+      "label": "Office - 65in The Frame 2 (QN65LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "master-suite": {
+      "ip": "192.168.1.137",
+      "mac": "80:0d:3f:8f:6c:c8",
+      "label": "Master Suite - 65in The Frame 4 (QN65LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "gym": {
+      "ip": "192.168.1.195",
+      "mac": "80:0d:3f:8f:79:aa",
+      "label": "Gym - 65in The Frame, unnumbered (QN65LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "guest-suite": {
+      "ip": "192.168.1.135",
+      "mac": "80:0d:3f:8f:73:be",
+      "label": "Guest Suite - 65in The Frame 3 (QN65LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "bar-sitting": {
+      "ip": "192.168.1.181",
+      "mac": "b8:a0:b8:61:04:6c",
+      "_label": "WIRELESS - Wake-on-LAN over Wi-Fi is unreliable on these sets, so power-on may not work. Discovered 2026-08-04.",
+      "label": "Bar Sitting - 75in The Frame (QN75LS03HWFXZA) - WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain",
+        "open_macro": [
+          "KEY_HOME",
+          "@1200",
+          "KEY_HOME",
+          "@1800",
+          "KEY_DOWN",
+          "@500",
+          "KEY_DOWN",
+          "@500",
+          "KEY_DOWN",
+          "@900",
+          "KEY_LEFT",
+          "@500",
+          "KEY_LEFT",
+          "@500",
+          "KEY_LEFT",
+          "@900",
+          "KEY_ENTER"
+        ]
+      },
+      "token": "63014771",
+      "_photos": "open_macro recorded by hand 2026-08-04: this firmware has NO working network launch for the browser (REST applications does not list it, ed.apps.launch is a no-op, DIAL only echoes), so the remote is the only way in. Pauses are explicit because the keys were recorded at human speed and the home menu needs time to draw. Re-record with learn.bat frame-75 if a firmware update reshuffles the home screen."
+    },
+    "bar-top": {
+      "ip": "192.168.1.82",
+      "mac": "80:0d:3f:69:2e:8d",
+      "_label": "Discovered on the VideoWall LAN 2026-08-04. A Frame, but on the browser slideshow like every other TV rather than art mode. Unlike mini-led its UPnP port 9197 is open, so volume/mute work here.",
+      "label": "Bar Top - 85in The Frame (QN85LS03HEFXZA, 26_PTM_FTV) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "front-bed": {
+      "ip": "192.168.1.169",
+      "mac": "98:4e:8a:7e:0e:f9",
+      "label": "Front Bed (6) - 50in Mini LED (UN50M70HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "loft": {
+      "ip": "192.168.1.209",
+      "mac": "cc:20:ac:d3:36:9c",
+      "label": "Loft - 55in Mini LED (UN55M80HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "patio-left": {
+      "ip": "192.168.1.64",
+      "mac": "80:0d:3f:78:8c:d5",
+      "label": "Patio Left - 65in Mini LED (UN65M80HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "patio-right": {
+      "ip": "192.168.1.147",
+      "mac": "cc:20:ac:20:f8:9d",
+      "label": "Patio Right - 65in Mini LED 1 (UN65M80HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "lower-patio": {
+      "ip": "192.168.1.254",
+      "mac": "98:4e:8a:97:cf:6b",
+      "label": "Lower Patio - 75in Mini LED (UN75M80HAFXZA) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      },
+      "token": "15756525"
+    },
+    "rear-bed": {
+      "ip": "192.168.1.203",
+      "mac": "98:4e:8a:7e:09:ea",
+      "token": "11682040",
+      "label": "Rear Bed (4) - 50in Mini LED (UN50M70HAFXZA, 26_KSUE_UB) - wired",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "business": {
+      "ip": "192.168.100.84",
+      "mac": "b8:a0:b8:4c:21:96",
+      "token": "44781245",
+      "label": "85in Business TV BEF-H (LH85BEFHLGFXGO) - office",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "crystal": {
+      "ip": "192.168.100.189",
+      "mac": "00:7d:3b:59:01:51",
+      "token": "16204609",
+      "label": "85in Crystal UHD DU8000 (UN85DU8000CXZA) - office",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10,
+        "fit": "contain"
+      }
+    },
+    "golf-right": {
+      "ip": "192.168.1.88",
+      "mac": "00:7d:3b:3c:5b:bb",
+      "label": "65in Golf Sim Right (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "golf-left": {
+      "ip": "192.168.1.107",
+      "mac": "b8:a0:b8:49:d7:fe",
+      "label": "65in Golf Sim Left (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "bar-side": {
+      "ip": "192.168.1.58",
+      "mac": "b8:a0:b8:49:d6:36",
+      "label": "65in Bar Side (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "back-bar": {
+      "ip": "192.168.1.68",
+      "mac": "b8:a0:b8:49:d7:c9",
+      "label": "65in Back Bar (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "over-bar": {
+      "ip": "192.168.1.126",
+      "mac": "b8:a0:b8:49:d5:e7",
+      "label": "65in Over Bar (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "bar-55": {
+      "ip": "192.168.1.131",
+      "mac": "28:07:08:07:e2:12",
+      "label": "55in Bar (QN55QN70FAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "lounge": {
+      "ip": "192.168.1.69",
+      "mac": "00:7d:3b:3c:5b:93",
+      "label": "65in Lounge (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "pavillion": {
+      "ip": "192.168.1.163",
+      "mac": "b0:f2:f6:9c:f7:5c",
+      "label": "75in Pavillion (QN75Q8FAAFXZA) - venue, WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "zach": {
+      "ip": "192.168.1.153",
+      "mac": "00:7d:3b:3c:5b:e8",
+      "label": "65in Zachs Office (QN65Q8FAAFXZA) - venue",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    },
+    "kitchen": {
+      "ip": "192.168.1.127",
+      "mac": "74:6d:fa:38:75:2e",
+      "_label": "The Frame also has a native art-mode slideshow, but it runs the same browser slideshow as every other TV so all screens show identical content.",
+      "label": "55in Kitchen Frame (QN55LS03FAFXZA) - venue, WIRELESS",
+      "photos": {
+        "method": "browser",
+        "interval_seconds": 10
+      }
+    }
+  },
+  "_groups": "'home' is all 14 TVs at this house. Also: frames, minis, bedrooms, patio, bar. Aliases are room names - safe to rename because every TV's browser homepage is the shared /slideshow/live/all, not a per-TV URL.",
+  "groups": {
+    "home": [
+      "middle-bed",
+      "sitting-area",
+      "office",
+      "master-suite",
+      "gym",
+      "guest-suite",
+      "bar-sitting",
+      "bar-top",
+      "front-bed",
+      "loft",
+      "patio-left",
+      "patio-right",
+      "lower-patio",
+      "rear-bed"
+    ],
+    "frames": [
+      "sitting-area",
+      "office",
+      "master-suite",
+      "gym",
+      "guest-suite",
+      "bar-sitting",
+      "bar-top"
+    ],
+    "golf": [
+      "golf-right",
+      "golf-left"
+    ],
+    "bar": [
+      "bar-top",
+      "bar-sitting"
+    ],
+    "venue": [
+      "golf-right",
+      "golf-left",
+      "bar-side",
+      "back-bar",
+      "over-bar",
+      "bar-55",
+      "lounge",
+      "pavillion",
+      "zach",
+      "kitchen"
+    ],
+    "minis": [
+      "middle-bed",
+      "front-bed",
+      "loft",
+      "patio-left",
+      "patio-right",
+      "lower-patio",
+      "rear-bed"
+    ],
+    "bedrooms": [
+      "master-suite",
+      "guest-suite",
+      "rear-bed",
+      "middle-bed",
+      "front-bed"
+    ],
+    "patio": [
+      "patio-left",
+      "patio-right",
+      "lower-patio"
+    ],
+    "office-site": [
+      "business",
+      "crystal"
+    ]
+  },
+  "_auto_heal": "After any command meant to put pictures on screen, rescan and re-run 'on' for anything that did not land (2 rounds, 25s apart). auto_heal_minutes also sweeps periodically and nudges only TVs that are ON but not playing - a TV that is off was probably turned off deliberately. Set auto_heal false / 0 to disable.",
+  "auto_heal": true,
+  "auto_heal_minutes": 10
+}
