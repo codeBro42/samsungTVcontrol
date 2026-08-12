@@ -1,5 +1,17 @@
 # samsungTVcontrol
 
+> **Which folder do I use?**
+>
+> | | |
+> |---|---|
+> | **`windows/`** | The system **running today**, proven against 14 real TVs. Use this. |
+> | **`tvhub-app/`** | The ground-up rewrite: cross-platform, set up entirely from a browser. **Not yet tested against any TV.** |
+> | **`legacy/`** | First-pass probes, kept for reference. Not on the running path. |
+>
+> Install `windows/` if you want something that works now. Install `tvhub-app/`
+> if you are commissioning a new site and can verify it against the TVs as you go.
+> Do not delete `windows/` until `tvhub-app/` has been proven on real hardware.
+
 Control a fleet of Samsung Tizen TVs over plain IP — power, and a photo slideshow
 on every screen — from a small Python service running on one Windows PC.
 
