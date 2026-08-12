@@ -103,9 +103,37 @@
     </div>
   </details>
 
+  <!-- 5 ------------------------------------------------------------------ -->
+  <details class="step" id="step-homepage">
+    <summary><span class="stepno">4</span><span>Set each TV's homepage</span><span class="tick"></span></summary>
+    <div class="body">
+      <div class="note bad">
+        <p><span class="strong">This step cannot be automated. It is done by hand, once per TV, with the TV's own remote.</span></p>
+        <p>Many Samsung firmwares accept a "launch the browser at this address" command, reply that they did it, and then ignore the address. Every documented way of asking has been tried against these sets, including after a firmware update. So instead: each TV's browser homepage is set once, by hand, to the one address below.</p>
+        <p>Nothing after this is manual. Switching playlists changes what that one address serves, so the TVs never need to be touched again.</p>
+      </div>
+      <div class="bigurl" id="homepage-url">-</div>
+      <div class="row">
+        <button type="button" class="btn primary" id="homepage-copy" data-action="copy" data-arg="">Copy address</button>
+      </div>
+      <div class="note" id="homepage-warn" hidden>The server address is not set yet, so this URL is a guess. Go back to step 1 first.</div>
+      <ol id="homepage-steps"></ol>
+      <div class="plist" id="homepagelist"></div>
+      <p class="hint">Test asks that TV to show the slideshow and only reports success if the TV really did fetch the page from this server. "The command was accepted" is not success - a Samsung set will happily accept a command and do nothing.</p>
+      <p class="hint">If a TV fails the test, its firmware will not open its browser on request. Open that TV's page and record an open macro: a short series of remote keypresses that navigates to the Internet app.</p>
+      <div class="note" id="tvloop">
+        <p><span class="strong">Steps 2 to 4 are one TV's worth of work.</span> Do them for a TV, then come back here: add the next one, or move on once every TV is done.</p>
+        <div class="row">
+          <button type="button" class="btn" data-action="add-another-tv">Add another TV</button>
+          <button type="button" class="btn primary" data-action="tvs-done">Finished adding TVs - continue to photos</button>
+        </div>
+      </div>
+    </div>
+  </details>
+
   <!-- 4 ------------------------------------------------------------------ -->
   <details class="step" id="step-photos">
-    <summary><span class="stepno">4</span><span>Add photos</span><span class="tick"></span></summary>
+    <summary><span class="stepno">5</span><span>Add photos</span><span class="tick"></span></summary>
     <div class="body">
       <div class="row">
         <input class="input grow" id="new-playlist" placeholder="playlist name" data-enter="make-playlist">
@@ -122,27 +150,6 @@
       <div id="setup-rejects"></div>
       <p class="hint">JPEG, PNG, WebP, GIF and BMP. Photos straight off an iPhone are usually HEIC, which no TV browser can show - export or convert them to JPEG first.</p>
       <p class="hint">Photos appear in filename order, so naming them 01-, 02-, 03- is the way to control the order. The full photo manager is on the <a href="/ui/photos">Photos</a> page.</p>
-    </div>
-  </details>
-
-  <!-- 5 ------------------------------------------------------------------ -->
-  <details class="step" id="step-homepage">
-    <summary><span class="stepno">5</span><span>Set each TV's homepage</span><span class="tick"></span></summary>
-    <div class="body">
-      <div class="note bad">
-        <p><span class="strong">This step cannot be automated. It is done by hand, once per TV, with the TV's own remote.</span></p>
-        <p>Many Samsung firmwares accept a "launch the browser at this address" command, reply that they did it, and then ignore the address. Every documented way of asking has been tried against these sets, including after a firmware update. So instead: each TV's browser homepage is set once, by hand, to the one address below.</p>
-        <p>Nothing after this is manual. Switching playlists changes what that one address serves, so the TVs never need to be touched again.</p>
-      </div>
-      <div class="bigurl" id="homepage-url">-</div>
-      <div class="row">
-        <button type="button" class="btn primary" id="homepage-copy" data-action="copy" data-arg="">Copy address</button>
-      </div>
-      <div class="note" id="homepage-warn" hidden>The server address is not set yet, so this URL is a guess. Go back to step 1 first.</div>
-      <ol id="homepage-steps"></ol>
-      <div class="plist" id="homepagelist"></div>
-      <p class="hint">Test asks that TV to show the slideshow and only reports success if the TV really did fetch the page from this server. "The command was accepted" is not success - a Samsung set will happily accept a command and do nothing.</p>
-      <p class="hint">If a TV fails the test, its firmware will not open its browser on request. Open that TV's page and record an open macro: a short series of remote keypresses that navigates to the Internet app.</p>
     </div>
   </details>
 

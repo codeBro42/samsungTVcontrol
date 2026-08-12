@@ -1331,6 +1331,26 @@
      with the remote before typing the homepage address. Firmware that refuses
      this is exactly the firmware that needs an open macro, so say that rather
      than failing quietly. */
+  /* The per-TV steps (find, sign in, pair, homepage) are one TV's worth of work
+     and get repeated. These two just steer the accordion so the loop is obvious
+     instead of the user guessing whether to scroll back up. */
+  ACTIONS['add-another-tv'] = function () {
+    var tvs = byId('step-find');
+    if (tvs) {
+      tvs.open = true;
+      if (tvs.scrollIntoView) { tvs.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      var ip = byId('m-alias');
+      if (ip && ip.focus) { setTimeout(function () { ip.focus(); }, 350); }
+    }
+  };
+  ACTIONS['tvs-done'] = function () {
+    var photos = byId('step-photos');
+    if (photos) {
+      photos.open = true;
+      if (photos.scrollIntoView) { photos.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }
+  };
+
   ACTIONS['open-tv-browser'] = function (n, d) {
     var out = byId('hptest-' + d.alias);
     if (out) { out.className = 'hint tight'; setText(out, 'asking ' + d.alias + ' to open its browser…'); }
