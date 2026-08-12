@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>__TITLE__ - TVHub</title>
+<link rel="icon" href="/ui/assets/icon.svg?v=__ASSET_V__">
+<link rel="stylesheet" href="/ui/assets/base.css?v=__ASSET_V__">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/ui/"><img src="/ui/assets/icon.svg?v=__ASSET_V__" alt=""><span>TVHub</span></a>
+  __NAV__
+</header>
+
+<main class="wrap">
+
+  <section class="panel flat" id="serverline"></section>
+  <section class="panel flat" id="setupbanner" hidden></section>
+
+  <section class="panel">
+    <h2>Playlist</h2>
+    <div class="row">
+      <select class="input grow" id="playlistpick" aria-label="playlist"></select>
+      <button type="button" class="btn primary" data-action="activate-playlist">Show on all TVs</button>
+    </div>
+    <p class="hint" id="playlistmeta"></p>
+    <p class="hint">Switching a playlist only moves a pointer, so this returns instantly and touches no TV. Every screen that is showing the slideshow picks the change up within about five seconds, because the page asks the server what to show every five seconds.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Groups</h2>
+    <div class="groups" id="groups"></div>
+    <p class="hint">A group action runs on its TVs in parallel and answers with one line per TV.</p>
+  </section>
+
+  <section class="panel">
+    <div class="row">
+      <h2>Screens</h2>
+      <span class="spacer"></span>
+      <span class="hint tight" id="jobcount"></span>
+      <button type="button" class="btn small" data-action="refresh">Refresh</button>
+    </div>
+    <div class="row">
+      <button type="button" class="btn" data-action="heal">Fix stuck TVs</button>
+      <button type="button" class="btn" id="identify-on" data-action="identify" data-arg="on">Identify on</button>
+      <button type="button" class="btn" id="identify-off" data-action="identify" data-arg="off">Identify off</button>
+    </div>
+    <p class="hint">"Fix stuck TVs" only touches sets that are on but not showing the slideshow. It skips anything unpaired, off, or in standby, on the assumption that a TV which is off was turned off on purpose.</p>
+    <p class="hint">Identify puts a large number and the TV's short name on each screen, so you can walk the room and work out which TV is which. Every TV shares one page, so the number is chosen from the address that asked for it.</p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Activity</h2>
+    <div class="jobstrip" id="jobstrip"></div>
+  </section>
+
+  <section class="panel">
+    <details id="routesbox">
+      <summary>Controller URLs</summary>
+      <p class="hint">Plain-text URLs for a controller (one line per TV, and always HTTP 200 when the route and the TV exist, so a controller never sees a comms error where it should see a message). Add <code>/x/</code> in front of any of them to fire and forget.</p>
+      <div id="routes"></div>
+    </details>
+  </section>
+
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>window.BOOT = __BOOT__;</script>
+<script src="/ui/assets/app.js?v=__ASSET_V__"></script>
+</body>
+</html>

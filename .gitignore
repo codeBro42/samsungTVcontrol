@@ -21,3 +21,8 @@ config.backup.json
 startup.txt
 pair*.txt
 .DS_Store
+
+# TVHub runtime (tokens, config, uploaded photos)
+tvhub-app/state/
+tvhub-app/config.json
+tvhub-app/photos/

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>__TITLE__ - TVHub</title>
+<link rel="icon" href="/ui/assets/icon.svg?v=__ASSET_V__">
+<link rel="stylesheet" href="/ui/assets/base.css?v=__ASSET_V__">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/ui/"><img src="/ui/assets/icon.svg?v=__ASSET_V__" alt=""><span>TVHub</span></a>
+  __NAV__
+</header>
+
+<main class="wrap">
+
+  <section class="panel">
+    <h2>Playlists</h2>
+    <div class="row">
+      <input class="input grow" id="newname" placeholder="new playlist name" data-enter="new-playlist">
+      <button type="button" class="btn primary" data-action="new-playlist">Create</button>
+    </div>
+    <div class="plist" id="plist" style="margin-top:10px"></div>
+    <p class="hint">"Show on all TVs" moves the shared pointer. It returns immediately and touches no TV; the screens follow within about five seconds.</p>
+  </section>
+
+  <section class="panel">
+    <div class="row">
+      <h2 id="thumbhead">Photos</h2>
+    </div>
+    <div class="row">
+      <input class="input grow" type="file" id="files" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
+      <button type="button" class="btn primary" data-action="upload">Upload</button>
+    </div>
+    <div class="bar" id="upbar" hidden><i></i></div>
+    <div id="rejects"></div>
+    <div class="thumbs" id="thumbs"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Notes</h2>
+    <p class="hint"><span class="strong">Order.</span> Photos are shown in filename order. Prefixing names with 01-, 02-, 03- is the only way to control the sequence.</p>
+    <p class="hint"><span class="strong">Size.</span> A TV browser has to download and decode every photo. Huge camera originals still work but a cold start can take many seconds per image; something around the screen's own resolution loads far better and looks identical.</p>
+    <p class="hint"><span class="strong">Formats.</span> JPEG, PNG, WebP, GIF and BMP. HEIC (the usual iPhone format) is refused, because no TV browser here can display it - export to JPEG first. A HEIC file renamed to .jpg is still detected and still refused.</p>
+    <p class="hint"><span class="strong">Deleting a playlist</span> is refused while it is the one the TVs are showing, or while any single TV is pinned to it. Switch away from it first.</p>
+    <p class="hint">Thumbnails are served from this server exactly as the TVs see them, so if an image is broken here it is broken there too.</p>
+  </section>
+
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>window.BOOT = __BOOT__;</script>
+<script src="/ui/assets/app.js?v=__ASSET_V__"></script>
+</body>
+</html>

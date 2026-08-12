@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>__TITLE__ - TVHub</title>
+<link rel="icon" href="/ui/assets/icon.svg?v=__ASSET_V__">
+<link rel="stylesheet" href="/ui/assets/base.css?v=__ASSET_V__">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/ui/"><img src="/ui/assets/icon.svg?v=__ASSET_V__" alt=""><span>TVHub</span></a>
+  __NAV__
+</header>
+
+<main class="wrap">
+
+  <section class="panel flat">
+    <div class="row">
+      <a class="btn small" id="backlink" href="/ui/">Back</a>
+      <span class="hint tight mono" id="tvalias"></span>
+    </div>
+  </section>
+
+  <section class="panel" id="tvstatus"></section>
+
+  <section class="panel">
+    <h2>Actions</h2>
+    <div class="row">
+      <button type="button" class="btn primary" data-action="tv-verb" data-arg="on">On</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="off">Off</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="toggle">Toggle</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="wake">Wake only</button>
+    </div>
+    <div class="row">
+      <button type="button" class="btn" data-action="tv-verb" data-arg="show">Show slideshow</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="stop">Stop</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="reopen">Reopen browser</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="fullscreen">Fullscreen</button>
+      <button type="button" class="btn" data-action="tv-verb" data-arg="status">Status</button>
+    </div>
+    <div class="row">
+      <select class="input grow" id="tv-playlist" aria-label="playlist for this TV"></select>
+      <button type="button" class="btn" data-action="tv-show">Show this playlist here</button>
+    </div>
+    <p class="hint">"On" leaves standby - or, on a Frame, leaves Art Mode - then puts the slideshow back and sends one keypress so the page can go fullscreen. "Off" puts a Frame into Art Mode, which is what off means on a Frame: its reported power stays on in both states.</p>
+    <p class="hint">"Reopen browser" is how a page fix or a wedged browser is recovered without walking to the screen.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Remote</h2>
+    <div class="pad" id="pad"></div>
+    <p class="hint">These are raw remote keys, sent straight through. The power key is a toggle, and on a Frame it toggles Art Mode instead of power - the Actions above are the safe way to change power.</p>
+    <div class="row">
+      <input class="input grow mono" id="keyseq" placeholder="KEY_HOME,@800,KEY_LEFT*3,KEY_ENTER" autocapitalize="characters" autocorrect="off" spellcheck="false" data-enter="send-keys">
+      <button type="button" class="btn" data-action="send-keys">Send sequence</button>
+    </div>
+    <p class="hint">A bare name is upper-cased and given a KEY_ prefix. <code>*3</code> repeats a key three times; <code>@500</code> waits 500 ms.</p>
+    <div class="row">
+      <input class="input num" id="volume" inputmode="numeric" placeholder="0-100" aria-label="volume">
+      <button type="button" class="btn small" data-action="set-volume">Set volume</button>
+      <button type="button" class="btn small" data-action="mute" data-arg="on">Mute on</button>
+      <button type="button" class="btn small" data-action="mute" data-arg="off">Mute off</button>
+    </div>
+    <p class="hint">Setting a numeric volume needs the TV's UPnP port open; many models keep it closed, and those answer with an error suggesting the Vol +/- keys instead.</p>
+    <div class="row">
+      <input class="input grow mono" id="appid" placeholder="app id" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button type="button" class="btn small" data-action="launch-app">Launch app</button>
+      <input class="input" id="macroname" placeholder="macro name" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button type="button" class="btn small" data-action="run-macro">Run macro</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Macro recorder</h2>
+    <div class="note">
+      <p>A macro is dead reckoning: it presses keys and hopes the TV's home screen is where it was last time. Macros differ between model generations - the same room needed three presses of down on one generation of Frame and two on another - so each TV gets its own, and a firmware update that reshuffles the home screen means recording it again.</p>
+    </div>
+    <p class="hint">Turn Record on, then drive the TV with the pad above until its browser is open. Every key you press is both sent to the TV and added to the list.</p>
+    <div class="row">
+      <button type="button" class="btn" id="rec-toggle" data-action="rec-toggle">Record</button>
+      <input class="input num" id="waitms" inputmode="numeric" value="500" aria-label="wait in milliseconds">
+      <button type="button" class="btn small" data-action="rec-wait">Insert wait</button>
+      <button type="button" class="btn small" data-action="rec-undo">Undo</button>
+      <button type="button" class="btn small" data-action="rec-clear">Clear</button>
+      <button type="button" class="btn small" data-action="rec-load">Load saved</button>
+    </div>
+    <ul class="reclist" id="reclist"></ul>
+    <p class="hint mono" id="recseq"></p>
+    <div class="row">
+      <button type="button" class="btn" data-action="rec-replay">Replay</button>
+      <button type="button" class="btn primary" data-action="rec-save" data-arg="open">Save as open macro</button>
+      <button type="button" class="btn" data-action="rec-save" data-arg="exit">Save as exit macro</button>
+    </div>
+    <p class="hint">Replay sends the whole sequence through the server so the gap Tizen needs between keys is applied, and so the control port is re-checked first - a key sent the instant a TV leaves standby or Art Mode is silently dropped.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Homepage</h2>
+    <div class="bigurl" id="tv-homepage">-</div>
+    <div class="row">
+      <button type="button" class="btn" id="hp-copy" data-action="copy" data-arg="">Copy address</button>
+      <label class="chk"><input type="checkbox" id="hp-confirmed" data-change="hp-confirm"> homepage is set on this TV</label>
+    </div>
+    <p class="hint">Set once by hand with the TV's remote: open Internet, go to this address, save it as the homepage. It never changes - switching playlists changes what it serves.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Pairing</h2>
+    <div class="row">
+      <button type="button" class="btn primary" data-action="pair">Pair (90s)</button>
+      <button type="button" class="btn" data-action="verify">Verify</button>
+      <button type="button" class="btn danger" data-action="unpair">Forget token</button>
+    </div>
+    <pre class="log" id="pairlog" hidden></pre>
+    <p class="hint">Press Pair, then choose ALLOW on the TV screen. This only works from a machine on the TV's own network. Verify proves a stored token still works by nudging the volume and reading it back, and it also clears the mark on a Frame whose art channel hung once.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Options</h2>
+    <div class="grid2" id="options"></div>
+    <div class="row">
+      <button type="button" class="btn primary" data-action="save-options">Save options</button>
+      <button type="button" class="btn" data-action="reset-options">Undo edits</button>
+    </div>
+    <p class="hint">"Inherit" means take the server-wide setting. Untick it to override just this TV.</p>
+  </section>
+
+  <section class="panel">
+    <h2>This TV</h2>
+    <div class="grid2">
+      <label class="lbl">label<input class="input" id="newlabel" placeholder="what people call it"></label>
+      <label class="lbl">address<input class="input mono" id="newip" placeholder="dotted quad" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+      <label class="lbl">hardware address<input class="input mono" id="newmac" placeholder="aa:bb:cc:dd:ee:ff" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+      <label class="lbl">short name<input class="input" id="newalias" placeholder="lowercase, no spaces" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+    </div>
+    <div class="row">
+      <button type="button" class="btn" data-action="set-label">Save label</button>
+      <button type="button" class="btn" data-action="set-ip">Save address</button>
+      <button type="button" class="btn" data-action="rename">Rename</button>
+      <button type="button" class="btn danger" data-action="delete-tv">Remove this TV</button>
+    </div>
+    <p class="hint">Changing the address keeps the pairing token and re-tests it straight away, so correcting an address the TV picked up from DHCP does not force you to pair again.</p>
+    <p class="hint">Renaming changes every URL that mentions this TV.</p>
+  </section>
+
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>window.BOOT = __BOOT__;</script>
+<script src="/ui/assets/app.js?v=__ASSET_V__"></script>
+</body>
+</html>

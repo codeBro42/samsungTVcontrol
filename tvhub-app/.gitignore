@@ -1,0 +1,25 @@
+# Runtime state. NEVER commit this: state/state.json holds the pairing tokens
+# that control the TVs, and config.json holds the site's addresses.
+/state/
+/config.json
+/config.json.tmp
+
+# The photo library is the customer's content, not source.
+/photos/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

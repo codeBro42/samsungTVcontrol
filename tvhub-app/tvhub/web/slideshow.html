@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<!--
+  THE TV PAGE. slideshow.py substitutes __BASE__ __PLAYLIST__ __TITLE__ __SECS__
+  __FIT__ __PAGEVER__ by plain string replacement.
+
+  Everything here that looks redundant is a measured workaround for the Samsung
+  Tizen browser. Do not tidy any of it away:
+
+   * The body is TALLER than the viewport (130vh) because the Tizen browser only
+     auto-hides its address and menu bars once the page CAN scroll. The two
+     image layers are position:fixed, so scrolling moves no pixels - the photo
+     never shifts.
+   * The scrollbar itself is hidden, or it draws over the photos.
+   * The page scrolls to y=90 and NEVER back to 0: scrolling to 0 re-reveals the
+     bars.
+   * Fullscreen is requested from keydown and click only. The Fullscreen API
+     ignores synthesised gestures, but a real remote keypress arrives as a
+     keydown - which is why the server sends one key after the page loads.
+   * The manifest poll every 5 s is also the only proof this TV is displaying
+     anything: the server records a heartbeat for the address that asked. Tizen
+     freezes a backgrounded page's timers, so a page that stops polling really
+     has stopped being on screen, even though the browser still reports running.
+   * If the manifest's page version differs from this file's, the page reloads
+     itself. That is how a fix to this file reaches every TV without anyone
+     walking to a screen - so PAGE_VERSION in slideshow.py MUST be bumped
+     whenever this file changes.
+   * ES5 only: var, function, XMLHttpRequest. No fetch, no arrow functions, no
+     template literals, no optional chaining, no let/const - this runs on TV
+     browser builds as old as 2019.
+-->
+<style>
+  html, body { margin: 0; padding: 0; background: #000; }
+
+  /* overflow-x lives on <html>, NOT on <body>. Setting any overflow on the body
+     makes its computed overflow-y "auto", which turns the body itself into the
+     scrolling box on some engines - and then window.scrollTo() moves nothing,
+     the page never scrolls, and the TV browser never hides its address bar.
+     Keeping it here leaves the viewport as the scroller. */
+  html {
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Taller than the viewport on purpose - see the note above. */
+  body {
+    min-height: 130vh;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Hide the scrollbar itself or it draws over the photos. */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+  /* Fixed, so the scroll that hides the browser chrome does not move the photo.
+     left/top/right/bottom rather than inset: inset is too new for these sets. */
+  .layer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: __FIT__;
+    opacity: 0;
+    -webkit-transition: opacity 900ms ease-in-out;
+    transition: opacity 900ms ease-in-out;
+  }
+
+  .layer.on { opacity: 1; }
+
+  #msg {
+    position: fixed;
+    left: 6vw;
+    top: 50%;
+    width: 88vw;
+    margin-top: -12vh;
+    color: #9a9a9a;
+    font-family: sans-serif;
+    font-size: 3.2vh;
+    line-height: 1.5;
+    text-align: center;
+    display: none;
+  }
+
+  #msg .big { color: #d8d8d8; font-size: 4.4vh; display: block; margin-bottom: 2vh; }
+
+  /* Identify overlay: every TV shares one page, so this is the only way to tell
+     the screens apart - the server picks the number from the address that
+     asked for the manifest. */
+  #ident {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-family: sans-serif;
+    text-align: center;
+    display: none;
+  }
+
+  #identbox { position: absolute; left: 0; right: 0; top: 50%; margin-top: -18vh; }
+  #identn { font-size: 28vh; line-height: 1; font-weight: 700; }
+  #identa { font-size: 6vh; margin-top: 2vh; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<div class="layer" id="la"></div>
+<div class="layer" id="lb"></div>
+
+<div id="msg"><span class="big" id="msgbig"></span><span id="msgsub"></span></div>
+
+<div id="ident"><div id="identbox"><div id="identn"></div><div id="identa"></div></div></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var BASE = "__BASE__";
+  var PLAYLIST = "__PLAYLIST__";
+  var PAGEVER = "__PAGEVER__";
+
+  /* Read through a string so the page still works whether the server writes a
+     bare number or a quoted one. */
+  var SECS = parseFloat("__SECS__");
+  if (!SECS || SECS < 2) { SECS = 10; }
+
+  /* ?s= and ?fit= on the page URL are deliberate per-screen overrides, so a
+     later manifest must not quietly undo them. */
+  var LOCK_SECS = /[?&]s=/.test(location.search);
+  var LOCK_FIT = /[?&]fit=/.test(location.search);
+
+  var layers = [document.getElementById('la'), document.getElementById('lb')];
+  var front = 0;
+  var images = [];
+  var idx = 0;
+  var advTimer = null;
+  var failures = 0;
+  var netFails = 0;
+  var started = false;
+
+  /* ------------------------------------------------------------- messages */
+
+  function message(big, sub) {
+    var box = document.getElementById('msg');
+    if (!big && !sub) { box.style.display = 'none'; return; }
+    document.getElementById('msgbig').textContent = big || '';
+    document.getElementById('msgsub').textContent = sub || '';
+    box.style.display = 'block';
+  }
+
+  /* ------------------------------------------------------------ the photos */
+
+  function absolute(rel) {
+    var s = String(rel || '');
+    if (s.indexOf('http://') === 0 || s.indexOf('https://') === 0 || s.charAt(0) === '/') { return s; }
+    return BASE + s;
+  }
+
+  function setFit(fit) {
+    for (var i = 0; i < layers.length; i++) { layers[i].style.backgroundSize = fit; }
+  }
+
+  /* Swap layers ONLY inside the preloader's onload, or a slow read paints a
+     half-drawn frame on screen. */
+  function paint(url, cb) {
+    var img = new Image();
+    img.onload = function () {
+      var back = layers[1 - front];
+      back.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+      back.className = 'layer on';
+      layers[front].className = 'layer';
+      front = 1 - front;
+      cb(true);
+    };
+    img.onerror = function () { cb(false); };
+    img.src = url;
+  }
+
+  function schedule() {
+    if (advTimer) { clearTimeout(advTimer); }
+    advTimer = setTimeout(advance, Math.max(2, SECS) * 1000);
+  }
+
+  function advance() {
+    if (!images.length) { schedule(); return; }
+    idx = (idx + 1) % images.length;
+    showCurrent();
+  }
+
+  function showCurrent() {
+    if (!images.length) {
+      message('Nothing to show', 'The playlist "' + PLAYLIST + '" has no photos in it yet.');
+      schedule();
+      return;
+    }
+    message('', '');
+    var url = absolute(images[idx]);
+    paint(url, function (ok) {
+      if (ok) {
+        failures = 0;
+        schedule();
+        return;
+      }
+      /* A file can be deleted while the slideshow is running: step past it
+         quickly rather than stalling on a black screen. Give up circling once
+         every image in the list has failed. */
+      failures++;
+      if (failures > images.length) {
+        failures = 0;
+        message('Photos cannot be loaded', 'The server answered, but none of the images could be read.');
+        schedule();
+        return;
+      }
+      setTimeout(function () {
+        idx = (idx + 1) % images.length;
+        showCurrent();
+      }, 200);
+    });
+  }
+
+  /* ------------------------------------------------------------ identify */
+
+  function setIdentify(ident) {
+    var box = document.getElementById('ident');
+    if (!ident) { box.style.display = 'none'; return; }
+    var n = (ident.n === undefined || ident.n === null) ? '?' : ident.n;
+    document.getElementById('identn').textContent = String(n);
+    document.getElementById('identa').textContent = String(ident.alias || '');
+    box.style.display = 'block';
+  }
+
+  /* ------------------------------------------------------------ manifest */
+
+  function differs(a, b) {
+    if (a.length !== b.length) { return true; }
+    for (var i = 0; i < a.length; i++) { if (a[i] !== b[i]) { return true; } }
+    return false;
+  }
+
+  function indexOfImage(list, want) {
+    for (var i = 0; i < list.length; i++) { if (list[i] === want) { return i; } }
+    return -1;
+  }
+
+  function applyManifest(m) {
+    /* A page-version change means this very file has been replaced. Reload
+       before touching anything else. */
+    if (m.page !== undefined && m.page !== null && String(m.page) !== PAGEVER) {
+      location.reload(true);
+      return;
+    }
+
+    setIdentify(m.identify || null);
+
+    if (!LOCK_SECS && m.interval) {
+      var s = parseFloat(m.interval);
+      if (s >= 2 && s !== SECS) {
+        SECS = s;
+        schedule();
+      }
+    }
+    if (!LOCK_FIT && (m.fit === 'contain' || m.fit === 'cover')) { setFit(m.fit); }
+
+    var next = m.images || [];
+    var name = (m.playlist === undefined || m.playlist === null) ? PLAYLIST : String(m.playlist);
+
+    if (name !== PLAYLIST) {
+      /* A different playlist starts again from its first photo, immediately -
+         this is what a playlist switch looks like from the TV's side, and it is
+         the whole point of the five-second poll. */
+      PLAYLIST = name;
+      images = next;
+      idx = 0;
+      failures = 0;
+      showCurrent();
+      return;
+    }
+
+    if (!started || differs(images, next)) {
+      var current = images.length ? images[idx] : null;
+      images = next;
+      var at = current === null ? -1 : indexOfImage(images, current);
+      if (at >= 0) {
+        /* Same playlist, edited list: stay on the photo that is on screen. */
+        idx = at;
+      } else {
+        idx = 0;
+        failures = 0;
+        showCurrent();
+      }
+    }
+    started = true;
+  }
+
+  function poll() {
+    var x = new XMLHttpRequest();
+    var url = BASE + 'manifest.json?t=' + (new Date()).getTime();
+    try { x.open('GET', url, true); } catch (e) { return; }
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) { return; }
+      if (x.status >= 200 && x.status < 300) {
+        netFails = 0;
+        var m = null;
+        try { m = JSON.parse(x.responseText); } catch (e2) { m = null; }
+        if (m) { applyManifest(m); }
+        return;
+      }
+      netFails++;
+      if (netFails >= 3 && !images.length) {
+        message('Cannot reach the server', 'This TV is asking ' + BASE + ' for photos and getting no usable answer.');
+      }
+    };
+    try { x.send(null); } catch (e3) { netFails++; }
+  }
+
+  /* ---------------------------------------------------------- browser bars */
+
+  /* NEVER scroll back to the top: that brings the address and menu bars back.
+     All three forms are used because which element actually scrolls varies
+     between these firmware builds, and a nudge that lands on the wrong one
+     leaves the bars sitting over the photos. Belt and braces is cheap here;
+     being wrong is a site visit. */
+  function nudge() {
+    try { window.scrollTo(0, 90); } catch (e) { /* older builds throw here */ }
+    try {
+      if (document.documentElement && document.documentElement.scrollTop < 90) {
+        document.documentElement.scrollTop = 90;
+      }
+      if (document.body && document.body.scrollTop < 90) {
+        document.body.scrollTop = 90;
+      }
+    } catch (e2) { /* nothing to do */ }
+  }
+
+  /* ------------------------------------------------------------ fullscreen */
+
+  /* Only ever called from a real keydown or click. The Fullscreen API rejects a
+     synthesised gesture, so the server sends one remote key after load and the
+     TV delivers it here as a genuine keydown. */
+  function goFullscreen() {
+    var el = document.documentElement;
+    var fn = el.requestFullscreen || el.webkitRequestFullscreen ||
+             el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (!fn) { return; }
+    try { fn.call(el); } catch (e) { /* already fullscreen, or refused */ }
+  }
+
+  /* ------------------------------------------------------------------ boot */
+
+  document.addEventListener('keydown', goFullscreen, false);
+  document.addEventListener('click', goFullscreen, false);
+
+  message('Loading', 'Asking ' + BASE + ' what to show.');
+  nudge();
+  setTimeout(nudge, 1500);
+  setInterval(nudge, 15000);
+
+  poll();
+  setInterval(poll, 5000);
+  schedule();
+}());
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>__TITLE__ - TVHub</title>
+<link rel="icon" href="/ui/assets/icon.svg?v=__ASSET_V__">
+<link rel="stylesheet" href="/ui/assets/base.css?v=__ASSET_V__">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/ui/"><img src="/ui/assets/icon.svg?v=__ASSET_V__" alt=""><span>TVHub</span></a>
+  __NAV__
+</header>
+
+<main class="wrap">
+
+  <section class="panel flat">
+    <h1>Setup</h1>
+    <p class="hint">Six steps. You can stop after any of them and come back - this page always reopens at the next thing to do.</p>
+  </section>
+
+  <section class="panel note ok" id="setupdone" hidden>
+    <p><span class="strong">Setup is finished.</span> Everything below still works if you need to add a TV or change the address.</p>
+    <div class="row">
+      <a class="btn primary" href="/ui/">Go to the dashboard</a>
+      <button type="button" class="btn small" data-action="reopen-wizard">Mark setup unfinished</button>
+    </div>
+  </section>
+
+  <!-- 1 ------------------------------------------------------------------ -->
+  <details class="step" id="step-server">
+    <summary><span class="stepno">1</span><span>Server address</span><span class="tick"></span></summary>
+    <div class="body">
+      <p>This is the address the TVs use to reach this server.</p>
+      <div class="note">
+        <p><span class="strong">Get this right once.</span> This exact string ends up inside the browser homepage that you type into every TV by hand. If the address changes later, every TV stops finding the slideshow and you have to walk round them all again.</p>
+        <p>So this machine needs a fixed address - a static IP, or a DHCP reservation for it - before you go any further.</p>
+      </div>
+      <p class="hint">Currently set to: <span class="mono" id="addr-current">-</span></p>
+      <div class="row" id="addr-suggest"></div>
+      <div class="row">
+        <input class="input grow mono" id="addr-input" placeholder="http://host:port" autocapitalize="none" autocorrect="off" spellcheck="false" data-enter="save-addr">
+        <button type="button" class="btn primary" data-action="save-addr">Save address</button>
+      </div>
+      <p class="hint">The buttons above suggest addresses this machine appears to have. Pick the one on the same network as the TVs.</p>
+    </div>
+  </details>
+
+  <!-- 2 ------------------------------------------------------------------ -->
+  <details class="step" id="step-find">
+    <summary><span class="stepno">2</span><span>Find the TVs</span><span class="tick"></span></summary>
+    <div class="body">
+      <p>Scans a network for Samsung sets and lists what answers.</p>
+      <div class="row">
+        <input class="input mono" id="cidr" placeholder="a.b.c.0/24 (blank = this network)" autocapitalize="none" autocorrect="off" spellcheck="false" data-enter="discover">
+        <button type="button" class="btn primary" data-action="discover">Find TVs</button>
+      </div>
+      <pre class="log" id="discover-log" hidden></pre>
+      <div id="found"></div>
+      <p class="hint">A TV that is in standby or on another network may not answer. Add it by hand below - the address is all that is strictly needed, and the hardware address (MAC) lets TVHub try Wake-on-LAN as well.</p>
+      <div class="grid2">
+        <label class="lbl">short name<input class="input" id="m-alias" placeholder="lowercase, no spaces" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+        <label class="lbl">address<input class="input mono" id="m-ip" placeholder="dotted quad" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+        <label class="lbl">hardware address (optional)<input class="input mono" id="m-mac" placeholder="aa:bb:cc:dd:ee:ff" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+        <label class="lbl">label (optional)<input class="input" id="m-label" placeholder="what people call it"></label>
+      </div>
+      <div class="row"><button type="button" class="btn" data-action="add-manual">Add this TV</button></div>
+      <p class="hint">The short name is what appears in every URL and command, so keep it short and lowercase.</p>
+    </div>
+  </details>
+
+  <!-- 2b ----------------------------------------------------------------- -->
+  <details class="step" id="step-signin">
+    <summary><span class="stepno">!</span><span>On each TV: sign in to Smart Hub</span><span class="tick"></span></summary>
+    <div class="body">
+      <div class="note bad">
+        <p><span class="strong">Do this before pairing, or nothing below will work.</span> A Samsung TV that has never been signed in reports that it has <em>no apps at all</em> - no browser, nothing launchable - and every command is accepted and then ignored.</p>
+      </div>
+      <ol>
+        <li>On the TV remote press <span class="mono">Home</span>.</li>
+        <li>Go to <span class="mono">Menu &rsaquo; Settings &rsaquo; All Settings &rsaquo; General &amp; Privacy &rsaquo; Samsung Account</span> and sign in. Wording varies by year; on some sets it is under <span class="mono">Menu &rsaquo; Settings &rsaquo; Support</span>.</li>
+        <li>Accept the Smart Hub terms if prompted.</li>
+        <li>Confirm the TV now shows apps (Netflix, YouTube and so on) on its home row.</li>
+      </ol>
+      <p class="hint">Step 2 shows <span class="mono">signed in</span> or <span class="mono">NOT signed in</span> for each TV it finds, read straight from the TV, so you can check rather than guess. Re-run the scan after signing in.</p>
+    </div>
+  </details>
+
+  <!-- 3 ------------------------------------------------------------------ -->
+  <details class="step" id="step-pair">
+    <summary><span class="stepno">3</span><span>Pair with each TV</span><span class="tick"></span></summary>
+    <div class="body">
+      <div class="note">
+        <p><span class="strong">One TV at a time, and you have to be standing at it.</span> Turn the TV on, press Pair, then choose ALLOW in the box that appears on the TV screen. There are 90 seconds to do it.</p>
+        <p>Pairing only works from a machine on the same network as the TV - a set on another subnet refuses it instantly.</p>
+      </div>
+      <div class="plist" id="pairlist"></div>
+      <pre class="log" id="pair-log" hidden></pre>
+      <p class="hint">A stored token is not proof of pairing, so TVHub proves it: it nudges the volume up, reads the volume back off the TV, and puts it back. Only that counts as paired and verified.</p>
+    </div>
+  </details>
+
+  <!-- 4 ------------------------------------------------------------------ -->
+  <details class="step" id="step-photos">
+    <summary><span class="stepno">4</span><span>Add photos</span><span class="tick"></span></summary>
+    <div class="body">
+      <div class="row">
+        <input class="input grow" id="new-playlist" placeholder="playlist name" data-enter="make-playlist">
+        <button type="button" class="btn" data-action="make-playlist">Create playlist</button>
+      </div>
+      <div class="row">
+        <select class="input grow" id="setup-playlist" aria-label="playlist to upload into"></select>
+      </div>
+      <div class="row">
+        <input class="input grow" type="file" id="setup-files" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
+        <button type="button" class="btn primary" data-action="setup-upload">Upload</button>
+      </div>
+      <div class="bar" id="setup-upbar" hidden><i></i></div>
+      <div id="setup-rejects"></div>
+      <p class="hint">JPEG, PNG, WebP, GIF and BMP. Photos straight off an iPhone are usually HEIC, which no TV browser can show - export or convert them to JPEG first.</p>
+      <p class="hint">Photos appear in filename order, so naming them 01-, 02-, 03- is the way to control the order. The full photo manager is on the <a href="/ui/photos">Photos</a> page.</p>
+    </div>
+  </details>
+
+  <!-- 5 ------------------------------------------------------------------ -->
+  <details class="step" id="step-homepage">
+    <summary><span class="stepno">5</span><span>Set each TV's homepage</span><span class="tick"></span></summary>
+    <div class="body">
+      <div class="note bad">
+        <p><span class="strong">This step cannot be automated. It is done by hand, once per TV, with the TV's own remote.</span></p>
+        <p>Many Samsung firmwares accept a "launch the browser at this address" command, reply that they did it, and then ignore the address. Every documented way of asking has been tried against these sets, including after a firmware update. So instead: each TV's browser homepage is set once, by hand, to the one address below.</p>
+        <p>Nothing after this is manual. Switching playlists changes what that one address serves, so the TVs never need to be touched again.</p>
+      </div>
+      <div class="bigurl" id="homepage-url">-</div>
+      <div class="row">
+        <button type="button" class="btn primary" id="homepage-copy" data-action="copy" data-arg="">Copy address</button>
+      </div>
+      <div class="note" id="homepage-warn" hidden>The server address is not set yet, so this URL is a guess. Go back to step 1 first.</div>
+      <ol id="homepage-steps"></ol>
+      <div class="plist" id="homepagelist"></div>
+      <p class="hint">Test asks that TV to show the slideshow and only reports success if the TV really did fetch the page from this server. "The command was accepted" is not success - a Samsung set will happily accept a command and do nothing.</p>
+      <p class="hint">If a TV fails the test, its firmware will not open its browser on request. Open that TV's page and record an open macro: a short series of remote keypresses that navigates to the Internet app.</p>
+    </div>
+  </details>
+
+  <!-- 6 ------------------------------------------------------------------ -->
+  <details class="step" id="step-groups">
+    <summary><span class="stepno">6</span><span>Groups (optional)</span><span class="tick"></span></summary>
+    <div class="body">
+      <p>A group lets one URL or one button drive several TVs at once. Skip this if you do not need it.</p>
+      <div class="row">
+        <input class="input grow" id="group-name" placeholder="group name" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <button type="button" class="btn primary" data-action="group-save">Save group</button>
+      </div>
+      <div id="group-members"></div>
+      <div class="plist" id="grouplist"></div>
+      <p class="hint">A group cannot be named after an existing TV: where a bare name is used, a TV always wins, so a group with the same name would never be reachable.</p>
+      <div class="row">
+        <button type="button" class="btn primary" data-action="finish-setup">Finish setup</button>
+        <a class="btn" href="/ui/">Go to the dashboard</a>
+      </div>
+    </div>
+  </details>
+
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>window.BOOT = __BOOT__;</script>
+<script src="/ui/assets/app.js?v=__ASSET_V__"></script>
+</body>
+</html>
