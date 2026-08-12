@@ -895,9 +895,12 @@ class Tv:
         the whole architecture - many firmwares accept "launch the browser at
         this URL" and then ignore the URL (contract I8).
         """
+        # Deliberately short: this gets typed into a TV browser with a remote
+        # and a d-pad keyboard, so every character costs. /slides is an alias
+        # for /slideshow/live/all, which still works.
         if bool(self.opt("shared_homepage", True)):
-            return self.base_url() + "/slideshow/live/all"
-        return self.base_url() + "/slideshow/live/" + quote(self.alias, safe="")
+            return self.base_url() + "/slides"
+        return self.base_url() + "/slides/" + quote(self.alias, safe="")
 
     def slideshow_url(self, playlist_hint: str | None = None) -> str:
         if playlist_hint:
@@ -2506,7 +2509,7 @@ class Fleet:
         elif self.tvs:
             homepage = per_tv[self.aliases()[0]]
         else:
-            homepage = (base or "http://<this server>") + "/slideshow/live/all"
+            homepage = (base or "http://<this server>") + "/slides"
         instructions = [
             "This step cannot be automated.",
             "Many Samsung firmwares accept a 'launch the browser at this URL' "

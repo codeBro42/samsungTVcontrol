@@ -906,7 +906,7 @@ def homepage_url(ctx: "Context", alias: Optional[str] = None) -> str:
     base, _ = _base_url(ctx, alias)
     shared = bool(_cfg(ctx, "slideshow").get("shared_homepage", True))
     if shared or not alias:
-        return base + "/slideshow/live/all"
+        return base + "/slides"
     return base + "/slideshow/live/" + alias
 
 

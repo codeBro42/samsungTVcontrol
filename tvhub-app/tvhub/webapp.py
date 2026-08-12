@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import inspect
 import ipaddress
+import dataclasses
 import json
 import logging
 import os
@@ -123,7 +124,7 @@ HEAL_VERBS = frozenset({"on", "show"})
 CONTROL_ROOTS = frozenset(
     {"tv", "group", "all", "playlist", "playlists", "identify", "reload", "homepages", "x"}
 )
-PUBLIC_ROOTS = frozenset({"slideshow", "health", "favicon.ico"})
+PUBLIC_ROOTS = frozenset({"slideshow", "slides", "health", "favicon.ico"})
 
 # /x/ wraps a CONTROLLER path only. These are the controller routes that are not
 # a command target, so /x/ runs them as-is instead of parsing them into a plan.
@@ -132,7 +133,7 @@ _X_GENERIC_ROOTS = frozenset({"playlist", "playlists", "identify", "reload", "ho
 # is behind the CONTROL gate, so letting it wrap an /api/ path would let a source
 # in allow_from reach admin routes that admin_from is supposed to protect.
 # "x" also stops /x/x/x/... nesting into itself.
-_X_FORBIDDEN_ROOTS = frozenset({"api", "ui", "slideshow", "x", "health", "favicon.ico"})
+_X_FORBIDDEN_ROOTS = frozenset({"api", "ui", "slideshow", "slides", "x", "health", "favicon.ico"})
 
 _BODY_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
@@ -193,7 +194,7 @@ _NO_STORE = "no-store"
 
 # The one URL a human types into every TV's browser as its homepage (I8). It is
 # fixed forever; switching playlists repoints what it serves.
-SHARED_HOMEPAGE_PATH = "/slideshow/live/all"
+SHARED_HOMEPAGE_PATH = "/slides"
 
 _HOMEPAGE_INSTRUCTIONS: Tuple[str, ...] = (
     "This step cannot be automated. Many Samsung firmwares accept a "
@@ -244,9 +245,11 @@ _ROUTES: Tuple[Tuple[str, str, str, str, str], ...] = (
     ("GET|POST", "/reload", "control", "text", "Re-read config.json; the running config survives a bad file."),
     ("GET|POST", "/x/<controller path>", "control", "text",
      "Fire-and-forget: starts a job and returns 'started <path> (job <id>)' immediately."),
-    ("GET", "/slideshow/live/all", "public", "html", "THE homepage URL for every TV. Serves the shared pointer."),
-    ("GET", "/slideshow/live/all/manifest.json", "public", "json", "Polled every 5 s; a changed playlist or page version acts on it."),
-    ("GET", "/slideshow/live/all/img/<file>", "public", "image", "One photo, cached for an hour."),
+    ("GET", "/slides", "public", "html", "THE homepage URL for every TV - short because it is typed in with a remote. Serves the shared pointer."),
+    ("GET", "/slides/<alias>", "public", "html", "Per-TV variant, when shared_homepage is off."),
+    ("GET", "/slideshow/live/all", "public", "html", "Long-form alias of /slides, kept working."),
+    ("GET", "/slides/manifest.json", "public", "json", "Polled every 5 s; a changed playlist or page version acts on it."),
+    ("GET", "/slides/img/<file>", "public", "image", "One photo, cached for an hour."),
     ("GET", "/slideshow/live/<alias>", "public", "html", "Per-TV pointer; same three shapes."),
     ("GET", "/slideshow/p/<playlist>", "public", "html", "A fixed playlist, for spot checks. Same three shapes."),
     ("GET", "/", "view", "html", "Dashboard; redirects to /ui/setup on a fresh install."),
@@ -725,6 +728,26 @@ class App:
             self._require(request, "GET")
             return self._asset("icon.svg", _ASSET_CACHE)
         if head == "slideshow":
+            return self._slideshow(request)
+        if head == "slides":
+            # Short alias, because this address is typed into a TV browser with a
+            # remote and an on-screen keyboard. Rewrite onto the long form and
+            # reuse one handler rather than duplicating the slideshow routing.
+            #   /slides                -> /slideshow/live/all
+            #   /slides/<rest...>      -> /slideshow/live/all/<rest...>   (manifest, img)
+            #   /slides/<alias>        -> /slideshow/live/<alias>         (per-TV mode)
+            rest = segments[1:]
+            raw_rest = request.raw_segments[1:]
+            if rest and rest[0] not in ("manifest.json", "img"):
+                tail, raw_tail = ["live"] + rest[:1], ["live"] + raw_rest[:1]
+                rest, raw_rest = rest[1:], raw_rest[1:]
+            else:
+                tail, raw_tail = ["live", "all"], ["live", "all"]
+            new_segs = ["slideshow"] + tail + rest
+            new_raw = ["slideshow"] + raw_tail + raw_rest
+            request = dataclasses.replace(
+                request, path="/" + "/".join(new_raw),
+                segments=new_segs, raw_segments=new_raw)
             return self._slideshow(request)
         if head == "api":
             return self._api(request)
