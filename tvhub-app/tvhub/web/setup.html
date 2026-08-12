@@ -68,6 +68,25 @@
         <label class="lbl">label (optional)<input class="input" id="m-label" placeholder="what people call it"></label>
       </div>
       <div class="row"><button type="button" class="btn" data-action="add-manual">Add this TV</button></div>
+
+      <details class="step" id="tv-offline-help">
+        <summary><span class="stepno">?</span><span>A TV is missing from the scan</span><span class="tick"></span></summary>
+        <div class="body">
+          <p>The scan only finds TVs that are <span class="strong">powered on and already on this network</span>. A set that is off, or that has never been given a network connection, cannot answer. Get it connected, then rescan.</p>
+          <div class="note">
+            <p><span class="strong">Wired (preferred).</span> Plug Ethernet into the back of the TV, then on the TV: <span class="mono">Home &rsaquo; Menu &rsaquo; Settings &rsaquo; All Settings &rsaquo; Connection &rsaquo; Network &rsaquo; Open Network Settings &rsaquo; Wired</span>. Wired is worth the cable here - Wake-on-LAN and the control channel are both more reliable on it.</p>
+          </div>
+          <div class="note">
+            <p><span class="strong">Wi-Fi.</span> On the TV: <span class="mono">Home &rsaquo; Menu &rsaquo; Settings &rsaquo; All Settings &rsaquo; Connection &rsaquo; Network &rsaquo; Open Network Settings &rsaquo; Wireless</span>, pick your network and enter the password with the remote. It must be the <span class="strong">same network and subnet as this server</span> - a guest or IoT network will not work, because this server talks to the TV directly.</p>
+          </div>
+          <p class="hint">Menu wording moves around between model years. If those paths do not match, look for anything named Network or Connection under Settings.</p>
+          <p>Once it is connected, come back here:</p>
+          <div class="row">
+            <button type="button" class="btn primary" data-action="discover">Rescan the network</button>
+            <button type="button" class="btn" data-action="tvs-done">Finished adding TVs - continue</button>
+          </div>
+        </div>
+      </details>
       <p class="hint">The short name is what appears in every URL and command, so keep it short and lowercase.</p>
     </div>
   </details>

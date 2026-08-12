@@ -1241,6 +1241,24 @@
       });
     };
 
+    /* A scan only sees TVs that are powered on and already on this network, so
+       "nothing new" usually means a set still needs connecting rather than that
+       the fleet is complete. Open the how-to-connect panel instead of leaving
+       an empty list and no next step. */
+    function offerOfflineHelp() {
+      var help = byId('tv-offline-help');
+      if (!help) { return; }
+      var found = (SETUP && SETUP.found) ? SETUP.found : [];
+      var fresh = 0;
+      for (var i = 0; i < found.length; i++) {
+        if (!found[i].alias) { fresh++; }
+      }
+      if (fresh === 0) {
+        help.open = true;
+        if (help.scrollIntoView) { help.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      }
+    }
+
     ACTIONS['discover'] = function () {
       var cidr = val('cidr');
       var body = cidr ? { cidr: cidr } : {};
@@ -1248,8 +1266,11 @@
         log: byId('discover-log'),
         onUpdate: function (job) { if (job && job.result) { setupTakeDiscovery(job.result); } },
         done: function (err, job) {
-          if (job && job.result && setupTakeDiscovery(job.result)) { return; }
-          api('GET', '/api/discover', null, function (e2, data) { if (!e2) { setupTakeDiscovery(data); } });
+          if (job && job.result && setupTakeDiscovery(job.result)) { offerOfflineHelp(); return; }
+          api('GET', '/api/discover', null, function (e2, data) {
+            if (!e2) { setupTakeDiscovery(data); }
+            offerOfflineHelp();
+          });
         }
       });
     };
